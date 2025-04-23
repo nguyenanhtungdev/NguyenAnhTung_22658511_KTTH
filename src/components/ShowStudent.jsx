@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, Trash2, Edit, Save, X, PlusCircle } from 'lucide-react';
+import StudentItem from './StudentItem';
 
 export default function StudentManagementApp() {
   // Sử dụng callback để khởi tạo state từ localStorage
@@ -106,10 +107,6 @@ export default function StudentManagementApp() {
     setShowEditModal(false);
   };
 
-  // Animation style cho hàng
-  const rowStyle = "transition-all duration-300 hover:bg-blue-50 hover:shadow rounded";
-  const rowEnterStyle = "animate-fadeIn";
-
   return (
     <div className="max-w-4xl mt-4 mx-auto p-6 bg-white rounded-lg shadow-lg">
       <h1 className="text-3xl font-bold text-center text-blue-600 mb-8">Quản Lý Sinh Viên</h1>
@@ -193,35 +190,12 @@ export default function StudentManagementApp() {
           </thead>
           <tbody>
             {filteredStudents.map((student) => (
-              <tr 
-                key={student.id} 
-                className={`border-b ${rowStyle} ${rowEnterStyle}`}
-              >
-                <td className="py-3 px-4">{student.id}</td>
-                <td className="py-3 px-4">{student.name}</td>
-                <td className="py-3 px-4">
-                  <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
-                    {student.class}
-                  </span>
-                </td>
-                <td className="py-3 px-4">{student.age}</td>
-                <td className="py-3 px-4 text-center">
-                  <div className="flex justify-center space-x-2">
-                    <button 
-                      onClick={() => handleEditStart(student)}
-                      className="bg-yellow-500 text-white p-1 rounded hover:bg-yellow-600 transition-colors"
-                    >
-                      <Edit size={18} />
-                    </button>
-                    <button 
-                      onClick={() => handleDeleteStudent(student.id)}
-                      className="bg-red-500 text-white p-1 rounded hover:bg-red-600 transition-colors"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
+              <StudentItem 
+                key={student.id}
+                student={student}
+                onEdit={handleEditStart}
+                onDelete={handleDeleteStudent}
+              />
             ))}
             {filteredStudents.length === 0 && (
               <tr>
