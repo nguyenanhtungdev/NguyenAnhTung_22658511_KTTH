@@ -2,13 +2,21 @@ import { useState, useEffect } from 'react';
 import { Search, Trash2, Edit, Save, X, PlusCircle } from 'lucide-react';
 
 export default function StudentManagementApp() {
-  const [students, setStudents] = useState([
-    { id: 1, name: 'Nguyễn Văn A', class: '12A1', age: 18 },
-    { id: 2, name: 'Trần Thị B', class: '12A2', age: 17 },
-    { id: 3, name: 'Lê Văn C', class: '11A1', age: 16 },
-    { id: 4, name: 'Phạm Thị D', class: '11A2', age: 17 },
-    { id: 5, name: 'Hoàng Văn E', class: '10A1', age: 15 },
-  ]);
+  // Sử dụng callback để khởi tạo state từ localStorage
+  const [students, setStudents] = useState(() => {
+    const savedStudents = localStorage.getItem('students');
+    if (savedStudents) {
+      return JSON.parse(savedStudents);
+    }
+    // Dữ liệu mặc định nếu không có gì trong localStorage
+    return [
+      { id: 1, name: 'Nguyễn Văn A', class: '12A1', age: 18 },
+      { id: 2, name: 'Trần Thị B', class: '12A2', age: 17 },
+      { id: 3, name: 'Lê Văn C', class: '11A1', age: 16 },
+      { id: 4, name: 'Phạm Thị D', class: '11A2', age: 17 },
+      { id: 5, name: 'Hoàng Văn E', class: '10A1', age: 15 },
+    ];
+  });
 
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [filterClass, setFilterClass] = useState('');
@@ -43,14 +51,6 @@ export default function StudentManagementApp() {
     
     setFilteredStudents(result);
   }, [filterClass, searchText, students]);
-
-  // Load dữ liệu từ localStorage khi khởi động
-  useEffect(() => {
-    const savedStudents = localStorage.getItem('students');
-    if (savedStudents) {
-      setStudents(JSON.parse(savedStudents));
-    }
-  }, []);
 
   // Lưu dữ liệu vào localStorage khi có thay đổi
   useEffect(() => {
