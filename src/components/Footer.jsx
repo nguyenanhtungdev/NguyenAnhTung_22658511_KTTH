@@ -23,7 +23,7 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer className={`bg-gradient-to-r from-blue-700 to-indigo-800 text-white py-8 shadow-lg transition-all duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+    <footer className={`bg-gradient-to-r mt-4 from-blue-700 to-indigo-800 text-white py-8 shadow-lg transition-all duration-700 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
       <div className="container mx-auto px-4">
         {/* Top section with logo and links */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-8">
