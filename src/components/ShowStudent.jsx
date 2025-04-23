@@ -12,9 +12,11 @@ export default function StudentManagementApp() {
 
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [filterClass, setFilterClass] = useState('');
+  const [searchText, setSearchText] = useState('');
   const [editingStudent, setEditingStudent] = useState(null);
   const [newStudent, setNewStudent] = useState({ name: '', class: '', age: '' });
   const [classes, setClasses] = useState([]);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   // Lấy danh sách các lớp duy nhất
   useEffect(() => {
@@ -22,14 +24,25 @@ export default function StudentManagementApp() {
     setClasses(uniqueClasses);
   }, [students]);
 
-  // Lọc sinh viên theo lớp
+  // Lọc sinh viên theo lớp và tìm kiếm
   useEffect(() => {
-    if (filterClass === '') {
-      setFilteredStudents(students);
-    } else {
-      setFilteredStudents(students.filter(student => student.class === filterClass));
+    let result = [...students];
+    
+    // Lọc theo lớp
+    if (filterClass !== '') {
+      result = result.filter(student => student.class === filterClass);
     }
-  }, [filterClass, students]);
+    
+    // Tìm kiếm theo tên
+    if (searchText !== '') {
+      const search = searchText.toLowerCase();
+      result = result.filter(student => 
+        student.name.toLowerCase().includes(search)
+      );
+    }
+    
+    setFilteredStudents(result);
+  }, [filterClass, searchText, students]);
 
   // Load dữ liệu từ localStorage khi khởi động
   useEffect(() => {
@@ -70,6 +83,7 @@ export default function StudentManagementApp() {
   // Bắt đầu chỉnh sửa sinh viên
   const handleEditStart = (student) => {
     setEditingStudent({ ...student });
+    setShowEditModal(true);
   };
 
   // Lưu thông tin sinh viên sau khi chỉnh sửa
@@ -83,11 +97,13 @@ export default function StudentManagementApp() {
       student.id === editingStudent.id ? editingStudent : student
     ));
     setEditingStudent(null);
+    setShowEditModal(false);
   };
 
   // Hủy chỉnh sửa
   const handleCancelEdit = () => {
     setEditingStudent(null);
+    setShowEditModal(false);
   };
 
   // Animation style cho hàng
@@ -155,19 +171,10 @@ export default function StudentManagementApp() {
           <Search className="absolute left-3 text-gray-400" size={18} />
           <input
             type="text"
-            placeholder="Tìm kiếm sinh viên..."
+            placeholder="Tìm kiếm sinh viên theo tên..."
             className="pl-10 p-2 border rounded-full w-64 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            onChange={(e) => {
-              const searchText = e.target.value.toLowerCase();
-              if (searchText === '') {
-                setFilteredStudents(students);
-              } else {
-                setFilteredStudents(students.filter(student => 
-                  student.name.toLowerCase().includes(searchText) ||
-                  student.class.toLowerCase().includes(searchText)
-                ));
-              }
-            }}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
           />
         </div>
       </div>
@@ -190,80 +197,30 @@ export default function StudentManagementApp() {
                 key={student.id} 
                 className={`border-b ${rowStyle} ${rowEnterStyle}`}
               >
-                {editingStudent && editingStudent.id === student.id ? (
-                  // Chế độ chỉnh sửa
-                  <>
-                    <td className="py-3 px-4">{student.id}</td>
-                    <td className="py-3 px-4">
-                      <input
-                        type="text"
-                        value={editingStudent.name}
-                        onChange={(e) => setEditingStudent({ ...editingStudent, name: e.target.value })}
-                        className="p-1 border rounded w-full"
-                      />
-                    </td>
-                    <td className="py-3 px-4">
-                      <input
-                        type="text"
-                        value={editingStudent.class}
-                        onChange={(e) => setEditingStudent({ ...editingStudent, class: e.target.value })}
-                        className="p-1 border rounded w-full"
-                      />
-                    </td>
-                    <td className="py-3 px-4">
-                      <input
-                        type="number"
-                        value={editingStudent.age}
-                        onChange={(e) => setEditingStudent({ ...editingStudent, age: parseInt(e.target.value) })}
-                        className="p-1 border rounded w-full"
-                      />
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <div className="flex justify-center space-x-2">
-                        <button 
-                          onClick={handleSaveEdit}
-                          className="bg-green-500 text-white p-1 rounded hover:bg-green-600 transition-colors"
-                        >
-                          <Save size={18} />
-                        </button>
-                        <button 
-                          onClick={handleCancelEdit}
-                          className="bg-gray-500 text-white p-1 rounded hover:bg-gray-600 transition-colors"
-                        >
-                          <X size={18} />
-                        </button>
-                      </div>
-                    </td>
-                  </>
-                ) : (
-                  // Chế độ hiển thị
-                  <>
-                    <td className="py-3 px-4">{student.id}</td>
-                    <td className="py-3 px-4">{student.name}</td>
-                    <td className="py-3 px-4">
-                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
-                        {student.class}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">{student.age}</td>
-                    <td className="py-3 px-4 text-center">
-                      <div className="flex justify-center space-x-2">
-                        <button 
-                          onClick={() => handleEditStart(student)}
-                          className="bg-yellow-500 text-white p-1 rounded hover:bg-yellow-600 transition-colors"
-                        >
-                          <Edit size={18} />
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteStudent(student.id)}
-                          className="bg-red-500 text-white p-1 rounded hover:bg-red-600 transition-colors"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </td>
-                  </>
-                )}
+                <td className="py-3 px-4">{student.id}</td>
+                <td className="py-3 px-4">{student.name}</td>
+                <td className="py-3 px-4">
+                  <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                    {student.class}
+                  </span>
+                </td>
+                <td className="py-3 px-4">{student.age}</td>
+                <td className="py-3 px-4 text-center">
+                  <div className="flex justify-center space-x-2">
+                    <button 
+                      onClick={() => handleEditStart(student)}
+                      className="bg-yellow-500 text-white p-1 rounded hover:bg-yellow-600 transition-colors"
+                    >
+                      <Edit size={18} />
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteStudent(student.id)}
+                      className="bg-red-500 text-white p-1 rounded hover:bg-red-600 transition-colors"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
             {filteredStudents.length === 0 && (
@@ -280,6 +237,67 @@ export default function StudentManagementApp() {
       <div className="mt-4 text-right text-gray-600">
         Tổng số sinh viên: {filteredStudents.length}
       </div>
+      
+      {/* Modal chỉnh sửa sinh viên */}
+      {showEditModal && editingStudent && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+            <h3 className="text-xl font-bold mb-4 text-blue-600 flex items-center">
+              <Edit className="mr-2" size={20} />
+              Chỉnh Sửa Sinh Viên
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2">Tên sinh viên:</label>
+                <input
+                  type="text"
+                  value={editingStudent.name}
+                  onChange={(e) => setEditingStudent({ ...editingStudent, name: e.target.value })}
+                  className="p-2 border rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2">Lớp:</label>
+                <input
+                  type="text"
+                  value={editingStudent.class}
+                  onChange={(e) => setEditingStudent({ ...editingStudent, class: e.target.value })}
+                  className="p-2 border rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2">Tuổi:</label>
+                <input
+                  type="number"
+                  value={editingStudent.age}
+                  onChange={(e) => setEditingStudent({ ...editingStudent, age: parseInt(e.target.value) || '' })}
+                  className="p-2 border rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-3 mt-6">
+                <button 
+                  onClick={handleCancelEdit}
+                  className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 transition-colors flex items-center"
+                >
+                  <X className="mr-1" size={18} />
+                  Hủy
+                </button>
+                <button 
+                  onClick={handleSaveEdit}
+                  className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 transition-colors flex items-center"
+                >
+                  <Save className="mr-1" size={18} />
+                  Lưu
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
